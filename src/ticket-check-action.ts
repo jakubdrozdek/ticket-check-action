@@ -317,6 +317,6 @@ export async function run(): Promise<void> {
     }
   } catch (error) {
     debug('ERROR', error.message);
-    setFailed(error.message);
+    setFailed(error);
   }
 }
