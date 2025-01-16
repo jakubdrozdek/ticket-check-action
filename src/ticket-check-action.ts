@@ -139,10 +139,11 @@ export async function run(): Promise<void> {
 
         debug('typeWithScope', typeWithScope || 'not found');
         debug('description', description || 'not found');
-        setFailed('Could not extract typeWithScope or description from the title');
 
         if (typeWithScope && description) {
           newTitle = newTitle.replace('%typeWithScope%', typeWithScope).replace('%description%', description);
+        } else {
+          setFailed('Could not extract typeWithScope or description from the title');
         }
       }
 
