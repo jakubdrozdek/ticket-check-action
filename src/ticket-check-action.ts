@@ -286,8 +286,6 @@ export async function run(): Promise<void> {
 
       if (id === null) {
         throw new Error('Could not extract a ticket URL from the body');
-
-        return;
       }
 
       const newTitle = addTicketToTitle(title, id);
