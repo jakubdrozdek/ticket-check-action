@@ -143,7 +143,7 @@ export async function run(): Promise<void> {
         if (typeWithScope && description) {
           newTitle = newTitle.replace('%typeWithScope%', typeWithScope).replace('%description%', description);
         } else {
-          setFailed('Could not extract typeWithScope or description from the title');
+          throw new Error('Could not extract typeWithScope or description from the title');
         }
       }
 
@@ -156,12 +156,14 @@ export async function run(): Promise<void> {
       const id = extractId(branch);
 
       if (id === null) {
-        setFailed('Could not extract a ticket ID reference from the branch');
+        throw new Error('Could not extract a ticket ID reference from the branch');
 
         return;
       }
 
       const newTitle = addTicketToTitle(title, id);
+
+      debug('new title in branch check', newTitle);
 
       client.rest.pulls.update({
         owner,
@@ -203,9 +205,8 @@ export async function run(): Promise<void> {
 
     if (body === undefined) {
       debug('failure', 'Body is undefined');
-      setFailed('Could not retrieve the Pull Request body');
 
-      return;
+      throw new Error('Could not retrieve the Pull Request body');
     }
 
     debug('body contents', body);
@@ -222,12 +223,14 @@ export async function run(): Promise<void> {
       const id = extractId(bodyCheck[0]);
 
       if (id === null) {
-        setFailed('Could not extract a ticket shorthand reference from the body');
+        throw new Error('Could not extract a ticket shorthand reference from the body');
 
         return;
       }
 
       const newTitle = addTicketToTitle(title, id);
+
+      debug('new title in body check', newTitle);
 
       client.rest.pulls.update({
         owner,
@@ -266,9 +269,8 @@ export async function run(): Promise<void> {
 
     if (!bodyURLRegexBase) {
       debug('failure', 'Title, branch, and body do not contain a reference to a ticket, and no body URL regex was set');
-      setFailed('No ticket was referenced in this pull request');
 
-      return;
+      throw new Error('No ticket was referenced in this pull request');
     }
 
     const bodyURLRegexFlags = getInput('bodyURLRegexFlags', {
@@ -283,12 +285,14 @@ export async function run(): Promise<void> {
       const id = extractId(bodyURLCheck[0]);
 
       if (id === null) {
-        setFailed('Could not extract a ticket URL from the body');
+        throw new Error('Could not extract a ticket URL from the body');
 
         return;
       }
 
       const newTitle = addTicketToTitle(title, id);
+
+      debug('new title in body URL check', newTitle);
 
       client.rest.pulls.update({
         owner,
@@ -310,11 +314,11 @@ export async function run(): Promise<void> {
 
     if (titleCheck === null && branchCheck === null && bodyCheck === null && bodyURLCheck === null) {
       debug('failure', 'Title, branch, and body do not contain a reference to a ticket');
-      setFailed('No ticket was referenced in this pull request');
 
-      return;
+      throw new Error('No ticket was referenced in this pull request');
     }
   } catch (error) {
+    debug('ERROR', error.message);
     setFailed(error.message);
   }
 }
