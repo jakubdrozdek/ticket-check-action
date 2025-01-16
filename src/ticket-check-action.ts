@@ -112,6 +112,43 @@ export async function run(): Promise<void> {
     const branchRegex = new RegExp(branchRegexBase, branchRegexFlags);
     const branchCheck = branchRegex.exec(branch);
 
+    const addTicketToTitle = (title: string, ticketId: string): string => {
+      let newTitle = '';
+
+      if (titleFormat.includes('%id%') && ticketId && !title.includes(ticketId)) {
+        newTitle = titleFormat.replace('%id%', ticketId);
+      } else {
+        newTitle = titleFormat.replace('%id%', '');
+      }
+
+      if (titleFormat.includes('%prefix%') && ticketPrefix && !title.includes(ticketPrefix)) {
+        newTitle = newTitle.replace('%prefix%', ticketPrefix);
+      } else {
+        newTitle = newTitle.replace('%prefix%', '');
+      }
+
+      if (title.includes(ticketPrefix) && title.includes(ticketId)) {
+        // if both have already been updated just leave it alone
+        newTitle = title;
+      }
+
+      if (titleFormat.includes('%typeWithScope%') && titleFormat.includes('%description%')) {
+        // Extract additional variables from the title format
+        const typeWithScope = titleCheck?.groups?.typeWithScope;
+        const description = titleCheck?.groups?.description;
+
+        debug('typeWithScope', typeWithScope || 'not found');
+        debug('description', description || 'not found');
+        setFailed('Could not extract typeWithScope or description from the title');
+
+        if (typeWithScope && description) {
+          newTitle = newTitle.replace('%typeWithScope%', typeWithScope).replace('%description%', description);
+        }
+      }
+
+      return newTitle.replace('%title%', title);
+    };
+
     if (branchCheck !== null) {
       debug('success', 'Branch name contains a reference to a ticket, updating title');
 
@@ -123,30 +160,13 @@ export async function run(): Promise<void> {
         return;
       }
 
-      let newTitle = '';
-
-      if (titleFormat.includes('%id%') && id && !title.includes(id)) {
-        newTitle = titleFormat.replace('%id%', id);
-      } else {
-        newTitle = titleFormat.replace('%id%', '');
-      }
-
-      if (titleFormat.includes('%prefix%') && ticketPrefix && !title.includes(ticketPrefix)) {
-        newTitle = newTitle.replace('%prefix%', ticketPrefix);
-      } else {
-        newTitle = newTitle.replace('%prefix%', '');
-      }
-
-      if (title.includes(ticketPrefix) && title.includes(id)) {
-        // if both have already been updated just leave it alone
-        newTitle = title;
-      }
+      const newTitle = addTicketToTitle(title, id);
 
       client.rest.pulls.update({
         owner,
         repo,
         pull_number: number,
-        title: newTitle.replace('%title%', title),
+        title: newTitle,
       });
 
       if (!quiet) {
@@ -206,30 +226,13 @@ export async function run(): Promise<void> {
         return;
       }
 
-      let newTitle = '';
-
-      if (titleFormat.includes('%id%') && id && !title.includes(id)) {
-        newTitle = titleFormat.replace('%id%', id);
-      } else {
-        newTitle = titleFormat.replace('%id%', '');
-      }
-
-      if (titleFormat.includes('%prefix%') && ticketPrefix && !title.includes(ticketPrefix)) {
-        newTitle = newTitle.replace('%prefix%', ticketPrefix);
-      } else {
-        newTitle = newTitle.replace('%prefix%', '');
-      }
-
-      if (title.includes(ticketPrefix) && title.includes(id)) {
-        // if both have already been updated just leave it alone
-        newTitle = title;
-      }
+      const newTitle = addTicketToTitle(title, id);
 
       client.rest.pulls.update({
         owner,
         repo,
         pull_number: number,
-        title: newTitle.replace('%title%', title),
+        title: newTitle,
       });
 
       if (!quiet) {
@@ -284,30 +287,13 @@ export async function run(): Promise<void> {
         return;
       }
 
-      let newTitle = '';
-
-      if (titleFormat.includes('%id%') && id && !title.includes(id)) {
-        newTitle = titleFormat.replace('%id%', id);
-      } else {
-        newTitle = titleFormat.replace('%id%', '');
-      }
-
-      if (titleFormat.includes('%prefix%') && ticketPrefix && !title.includes(ticketPrefix)) {
-        newTitle = newTitle.replace('%prefix%', ticketPrefix);
-      } else {
-        newTitle = newTitle.replace('%prefix%', '');
-      }
-
-      if (title.includes(ticketPrefix) && title.includes(id)) {
-        // if both have already been updated just leave it alone
-        newTitle = title;
-      }
+      const newTitle = addTicketToTitle(title, id);
 
       client.rest.pulls.update({
         owner,
         repo,
         pull_number: number,
-        title: newTitle.replace('%title%', title),
+        title: newTitle,
       });
 
       if (!quiet) {
